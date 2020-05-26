@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
- 
+
 """Simple HTTP Server With Upload.
 
 This module builds on http.server by implementing the standard GET
@@ -7,13 +7,13 @@ and HEAD requests in a fairly straightforward manner.
 
 see: https://gist.github.com/UniIsland/3346170
 """
- 
- 
+
+
 __version__ = "0.1"
 __all__ = ["SimpleHTTPRequestHandler"]
 __author__ = "bones7456"
 __home_page__ = "https://gist.github.com/UniIsland/3346170"
- 
+
 import os, sys
 import os.path, time
 import posixpath
@@ -49,7 +49,7 @@ def fbytes(B):
       return '{0:.2f} TB'.format(B/TB)
 
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
- 
+
     """Simple HTTP request handler with GET/HEAD/POST commands.
 
     This serves files from the current directory and any of its
@@ -82,8 +82,12 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         r, info = self.deal_post_data()
         print((r, info, "by: ", self.client_address))
         f = BytesIO()
+        enc = sys.getfilesystemencoding()
         f.write(b'<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">')
-        f.write(b"<html>\n<title>Upload Result Page</title>\n")
+        f.write(b"<html>\n")
+        f.write(('<meta http-equiv="Content-Type" '
+                 'content="text/html; charset=%s">' % enc).encode(enc))
+        f.write(b"<title>Upload Result Page</title>\n")
         f.write(b'<style type="text/css">\n')
         f.write(b'* {font-family: Helvetica; font-size: 16px; }\n')
         f.write(b'a { text-decoration: none; }\n')
@@ -97,8 +101,8 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         f.write(info.encode())
         f.write(("<br><br><form action=\"%s\">" % self.headers['referer']).encode())
         f.write(b"<input type=\"submit\" value=\"Back\"/></form>\n")
-        f.write(b"<hr><small>Powered By: bones7456<br>Check new version ")
-        f.write(b"<a href=\"https://gist.github.com/UniIsland/3346170\" target=\"_blank\">")
+        f.write(b"<hr><small><br>Check new version ")
+        f.write(b"<a href=\"https://gist.github.com/algony-tony/SimpleHTTPServerWithUpload\" target=\"_blank\">")
         f.write(b"here</a>.</small></body>\n</html>\n")
         length = f.tell()
         f.seek(0)
@@ -111,7 +115,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             f.close()
 
     def deal_post_data(self):
-        uploaded_files = []   
+        uploaded_files = []
         content_type = self.headers['content-type']
         if not content_type:
             return (False, "Content-Type header doesn't contain boundary")
@@ -138,7 +142,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             except IOError:
                 return (False, "<br><br>Can't create file to write.<br>Do you have permission to write?")
             else:
-                with out:                    
+                with out:
                     preline = self.rfile.readline()
                     remainbytes -= len(preline)
                     while remainbytes > 0:
@@ -155,7 +159,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                             out.write(preline)
                             preline = line
         return (True, "<br><br>'%s'" % "'<br>'".join(uploaded_files))
- 
+
     def send_head(self):
         """Common code for GET and HEAD commands.
 
@@ -199,7 +203,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Last-Modified", self.date_time_string(fs.st_mtime))
         self.end_headers()
         return f
- 
+
 
 
     def list_directory(self, path):

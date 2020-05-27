@@ -11,8 +11,8 @@ see: https://gist.github.com/UniIsland/3346170
 
 __version__ = "0.1"
 __all__ = ["SimpleHTTPRequestHandler"]
-__author__ = "bones7456"
-__home_page__ = "https://gist.github.com/UniIsland/3346170"
+__author__ = "bones7456,Tallguy297,algony"
+__home_page__ = "https://gist.github.com/algony-tony/SimpleHTTPServerWithUpload"
 
 import os, sys
 import os.path, time
@@ -30,7 +30,7 @@ import base64
 from io import BytesIO
 
 def fbytes(B):
-   'Return the given bytes as a human friendly KB, MB, GB, or TB string'
+   'Return the given bytes as a human friendly K(KB), M(MB), G(GB), or T(TB) string'
    B = float(B)
    KB = float(1024)
    MB = float(KB ** 2) # 1,048,576
@@ -38,15 +38,15 @@ def fbytes(B):
    TB = float(KB ** 4) # 1,099,511,627,776
 
    if B < KB:
-      return '{0} {1}'.format(B,'Bytes' if 0 == B > 1 else 'Byte')
+      return '{0:.0f} {1}'.format(B,'B' if 0 == B > 1 else 'B')
    elif KB <= B < MB:
-      return '{0:.2f} KB'.format(B/KB)
+      return '{0:.0f} K'.format(B/KB)
    elif MB <= B < GB:
-      return '{0:.2f} MB'.format(B/MB)
+      return '{0:.0f} M'.format(B/MB)
    elif GB <= B < TB:
-      return '{0:.2f} GB'.format(B/GB)
+      return '{0:.0f} G'.format(B/GB)
    elif TB <= B:
-      return '{0:.2f} TB'.format(B/TB)
+      return '{0:.0f} T'.format(B/TB)
 
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
@@ -61,22 +61,22 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     request omits the actual contents of the file.
 
     """
- 
+
     server_version = "SimpleHTTPWithUpload/" + __version__
- 
+
     def do_GET(self):
         """Serve a GET request."""
         f = self.send_head()
         if f:
             self.copyfile(f, self.wfile)
             f.close()
- 
+
     def do_HEAD(self):
         """Serve a HEAD request."""
         f = self.send_head()
         if f:
             f.close()
- 
+
     def do_POST(self):
         """Serve a POST request."""
         r, info = self.deal_post_data()
@@ -303,7 +303,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             if word in (os.curdir, os.pardir): continue
             path = os.path.join(path, word)
         return path
- 
+
     def copyfile(self, source, outputfile):
         """Copy all data between two file objects.
 
@@ -319,7 +319,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         """
         shutil.copyfileobj(source, outputfile)
- 
+
     def guess_type(self, path):
         """Guess the type of a file.
 
@@ -334,7 +334,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         slow) to look inside the data to make a better guess.
 
         """
- 
+
         base, ext = posixpath.splitext(path)
         if ext in self.extensions_map:
             return self.extensions_map[ext]
@@ -343,7 +343,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             return self.extensions_map[ext]
         else:
             return self.extensions_map['']
- 
+
     if not mimetypes.inited:
         mimetypes.init() # try to read system mime.types
     extensions_map = mimetypes.types_map.copy()
@@ -353,7 +353,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         '.c': 'text/plain',
         '.h': 'text/plain',
         })
- 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--bind', '-b', default='', metavar='ADDRESS',
                         help='Specify alternate bind address '
@@ -374,6 +374,6 @@ if HOST == '':
 Handler = SimpleHTTPRequestHandler
 
 with socketserver.TCPServer((BIND, PORT), Handler) as httpd:
-	serve_message = "Serving HTTP on {host} port {port} (http://{host}:{port}/) ..."
+	serve_message = "Serving HTTP on http://{host}:{port}/ ..."
 	print(serve_message.format(host=HOST, port=PORT))
 	httpd.serve_forever()
